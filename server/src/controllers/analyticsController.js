@@ -2,6 +2,7 @@ const Skill = require('../models/Skill');
 const Project = require('../models/Project');
 const Certification = require('../models/Certification');
 const Achievement = require('../models/Achievement');
+const Activity = require('../models/Activity');
 const { calculatePortfolioStrength } = require('../services/portfolioStrengthService');
 const { generateRecommendations } = require('../services/recommendationService');
 
@@ -52,15 +53,14 @@ const getAnalytics = async (req, res) => {
       value: item.count
     }));
 
-    // For recent activity, we could query a separate Activity model, 
-    // or just fetch the most recently created/updated items across collections.
-    // For simplicity, we'll fetch recent projects and skills.
-    const recentProjects = await Project.find({ user: userId }).sort({ createdAt: -1 }).limit(3);
-    const recentActivity = recentProjects.map(p => ({
-      id: p._id,
-      action: 'Added new project',
-      target: p.title,
-      date: p.createdAt
+    // Fetch recent activity
+    const activities = await Activity.find({ user: userId }).sort({ createdAt: -1 }).limit(10);
+    const recentActivity = activities.map(a => ({
+      id: a._id,
+      action: a.action,
+      target: a.target,
+      date: a.createdAt,
+      type: a.actionType || 'primary'
     }));
 
     res.status(200).json({

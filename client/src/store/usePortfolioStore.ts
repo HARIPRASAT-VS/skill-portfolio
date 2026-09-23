@@ -34,7 +34,8 @@ const emptyData: PortfolioData = {
   skills: [],
   projects: [],
   certifications: [],
-  achievements: []
+  achievements: [],
+  analytics: null
 };
 
 export const usePortfolioStore = create<PortfolioState>()(
@@ -43,14 +44,15 @@ export const usePortfolioStore = create<PortfolioState>()(
       ...emptyData,
       fetchData: async () => {
         try {
-          const [profile, skills, projects, certifications, achievements] = await Promise.all([
+          const [profile, skills, projects, certifications, achievements, analytics] = await Promise.all([
             apiClient.get('/profile').then((r: any) => r.data).catch(() => ({})),
             apiClient.get('/skills').then((r: any) => r.data).catch(() => []),
             apiClient.get('/projects').then((r: any) => r.data).catch(() => []),
             apiClient.get('/certifications').then((r: any) => r.data).catch(() => []),
-            apiClient.get('/achievements').then((r: any) => r.data).catch(() => [])
+            apiClient.get('/achievements').then((r: any) => r.data).catch(() => []),
+            apiClient.get('/analytics').then((r: any) => r.data).catch(() => null)
           ]);
-          set({ profile, skills, projects, certifications, achievements });
+          set({ profile, skills, projects, certifications, achievements, analytics });
         } catch (error) {
           console.error("Failed to fetch portfolio data", error);
         }
@@ -61,51 +63,63 @@ export const usePortfolioStore = create<PortfolioState>()(
       },
       addSkill: async (skill) => {
         const res = await apiClient.post('/skills', skill) as any;
-        set((state) => ({ skills: [res.data, ...state.skills] }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ skills: [res.data, ...state.skills], analytics: analyticsRes.data }));
       },
       updateSkill: async (id, updates) => {
         const res = await apiClient.put(`/skills/${id}`, updates) as any;
-        set((state) => ({ skills: state.skills.map(s => (s as any)._id === id || s.id === id ? res.data : s) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ skills: state.skills.map(s => (s as any)._id === id || s.id === id ? res.data : s), analytics: analyticsRes.data }));
       },
       deleteSkill: async (id) => {
         await apiClient.delete(`/skills/${id}`);
-        set((state) => ({ skills: state.skills.filter(s => (s as any)._id !== id && s.id !== id) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ skills: state.skills.filter(s => (s as any)._id !== id && s.id !== id), analytics: analyticsRes.data }));
       },
       addProject: async (project) => {
         const res = await apiClient.post('/projects', project) as any;
-        set((state) => ({ projects: [res.data, ...state.projects] }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ projects: [res.data, ...state.projects], analytics: analyticsRes.data }));
       },
       updateProject: async (id, updates) => {
         const res = await apiClient.put(`/projects/${id}`, updates) as any;
-        set((state) => ({ projects: state.projects.map(p => (p as any)._id === id || p.id === id ? res.data : p) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ projects: state.projects.map(p => (p as any)._id === id || p.id === id ? res.data : p), analytics: analyticsRes.data }));
       },
       deleteProject: async (id) => {
         await apiClient.delete(`/projects/${id}`);
-        set((state) => ({ projects: state.projects.filter(p => (p as any)._id !== id && p.id !== id) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ projects: state.projects.filter(p => (p as any)._id !== id && p.id !== id), analytics: analyticsRes.data }));
       },
       addCertification: async (cert) => {
         const res = await apiClient.post('/certifications', cert) as any;
-        set((state) => ({ certifications: [res.data, ...state.certifications] }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ certifications: [res.data, ...state.certifications], analytics: analyticsRes.data }));
       },
       updateCertification: async (id, updates) => {
         const res = await apiClient.put(`/certifications/${id}`, updates) as any;
-        set((state) => ({ certifications: state.certifications.map(c => (c as any)._id === id || c.id === id ? res.data : c) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ certifications: state.certifications.map(c => (c as any)._id === id || c.id === id ? res.data : c), analytics: analyticsRes.data }));
       },
       deleteCertification: async (id) => {
         await apiClient.delete(`/certifications/${id}`);
-        set((state) => ({ certifications: state.certifications.filter(c => (c as any)._id !== id && c.id !== id) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ certifications: state.certifications.filter(c => (c as any)._id !== id && c.id !== id), analytics: analyticsRes.data }));
       },
       addAchievement: async (achievement) => {
         const res = await apiClient.post('/achievements', achievement) as any;
-        set((state) => ({ achievements: [res.data, ...state.achievements] }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ achievements: [res.data, ...state.achievements], analytics: analyticsRes.data }));
       },
       updateAchievement: async (id, updates) => {
         const res = await apiClient.put(`/achievements/${id}`, updates) as any;
-        set((state) => ({ achievements: state.achievements.map(a => (a as any)._id === id || a.id === id ? res.data : a) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ achievements: state.achievements.map(a => (a as any)._id === id || a.id === id ? res.data : a), analytics: analyticsRes.data }));
       },
       deleteAchievement: async (id) => {
         await apiClient.delete(`/achievements/${id}`);
-        set((state) => ({ achievements: state.achievements.filter(a => (a as any)._id !== id && a.id !== id) }));
+        const analyticsRes = await apiClient.get('/analytics') as any;
+        set((state) => ({ achievements: state.achievements.filter(a => (a as any)._id !== id && a.id !== id), analytics: analyticsRes.data }));
       },
       toggleSkillVisibility: async (_id) => {},
       toggleProjectVisibility: async (_id) => {},

@@ -1,4 +1,5 @@
 const Achievement = require('../models/Achievement');
+const { logActivity } = require('../services/activityService');
 
 // @desc    Get all achievements for current user
 // @route   GET /api/achievements
@@ -43,6 +44,9 @@ const createAchievement = async (req, res) => {
   try {
     const achievementData = { ...req.body, user: req.user.id };
     const achievement = await Achievement.create(achievementData);
+    
+    await logActivity(req.user.id, 'Added achievement', achievement.title, 'amber');
+    
     res.status(201).json({ success: true, data: achievement });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -65,6 +69,8 @@ const updateAchievement = async (req, res) => {
       runValidators: true,
     });
 
+    await logActivity(req.user.id, 'Updated achievement', achievement.title, 'secondary');
+
     res.status(200).json({ success: true, data: achievement });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -83,6 +89,9 @@ const deleteAchievement = async (req, res) => {
     }
 
     await achievement.deleteOne();
+    
+    await logActivity(req.user.id, 'Deleted achievement', achievement.title, 'amber');
+    
     res.status(200).json({ success: true, message: 'Achievement removed' });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });

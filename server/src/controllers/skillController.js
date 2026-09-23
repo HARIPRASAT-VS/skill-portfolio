@@ -1,7 +1,7 @@
 const Skill = require('../models/Skill');
 const Project = require('../models/Project');
 const Certification = require('../models/Certification');
-
+const { logActivity } = require('../services/activityService');
 // @desc    Get all skills for current user
 // @route   GET /api/skills
 // @access  Private
@@ -79,6 +79,7 @@ const createSkill = async (req, res) => {
   try {
     const skillData = { ...req.body, user: req.user.id };
     const skill = await Skill.create(skillData);
+    await logActivity(req.user.id, 'Added new skill', skill.name, 'primary');
     res.status(201).json({ success: true, data: skill });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -100,6 +101,8 @@ const updateSkill = async (req, res) => {
       new: true,
       runValidators: true,
     });
+    
+    await logActivity(req.user.id, 'Updated skill', skill.name, 'secondary');
 
     res.status(200).json({ success: true, data: skill });
   } catch (error) {
@@ -129,6 +132,8 @@ const deleteSkill = async (req, res) => {
       { user: req.user.id, skills: skill._id },
       { $pull: { skills: skill._id } }
     );
+
+    await logActivity(req.user.id, 'Deleted skill', skill.name, 'amber');
 
     res.status(200).json({ success: true, message: 'Skill removed' });
   } catch (error) {

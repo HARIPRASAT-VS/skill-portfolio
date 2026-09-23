@@ -30,6 +30,7 @@ export interface Profile {
   portfolio: string;
   openToOpportunities: boolean;
   interests: string[];
+  isPublic?: boolean;
 }
 
 export interface Skill {
@@ -94,10 +95,32 @@ export interface Achievement {
   updatedAt: string;
 }
 
+export interface AnalyticsData {
+  portfolioStrength: number;
+  portfolioStrengthBreakdown: {
+    profile: { label: string, points: number, current: number, complete: boolean },
+    resume: { label: string, points: number, current: number, complete: boolean },
+    skills: { label: string, points: number, current: number, complete: boolean },
+    projects: { label: string, points: number, current: number, complete: boolean },
+    certifications: { label: string, points: number, current: number, complete: boolean },
+    achievements: { label: string, points: number, current: number, complete: boolean },
+    evidence: { label: string, points: number, current: number, complete: boolean }
+  };
+  totalSkills: number;
+  totalProjects: number;
+  totalCertifications: number;
+  totalAchievements: number;
+  skillsByCategory: { name: string, value: number }[];
+  projectsByTechnology: { name: string, value: number }[];
+  recentActivity: { id: string, action: string, target: string, date: string, type: string }[];
+  recommendations: { id: string, title: string, message: string, actionText: string, actionLink: string }[];
+}
+
 export interface PortfolioData {
   profile: Profile;
   skills: Skill[];
   projects: Project[];
   certifications: Certification[];
   achievements: Achievement[];
+  analytics: AnalyticsData | null;
 }

@@ -1,4 +1,5 @@
 const Profile = require('../models/Profile');
+const { logActivity } = require('../services/activityService');
 
 // @desc    Get user profile
 // @route   GET /api/profile
@@ -35,6 +36,8 @@ const updateProfile = async (req, res) => {
         { new: true, runValidators: true }
       );
     }
+
+    await logActivity(req.user.id, 'Updated profile', profile.fullName || 'Profile Details', 'primary');
 
     res.status(200).json({ success: true, data: profile });
   } catch (error) {

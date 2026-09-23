@@ -1,6 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { usePortfolioStore } from '../store/usePortfolioStore';
-import { calculatePortfolioStrength, generateRecommendations } from '../utils/portfolioLogic';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../components/ui/card';
 import { Progress } from '../components/ui/progress';
 import { Button } from '../components/ui/button';
@@ -12,47 +11,59 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
 import { toast } from 'sonner';
+import { formatDistanceToNow } from 'date-fns';
 
 const CHART_COLORS = ['#4f46e5', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b', '#ec4899'];
 
 export default function Dashboard() {
   const data = usePortfolioStore();
   const navigate = useNavigate();
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic, setIsPublic] = useState(data.profile.isPublic !== false); // default to true if undefined
 
-  const strengthData = calculatePortfolioStrength(data);
-  const recommendations = generateRecommendations(data);
+  useEffect(() => {
+    if (data.profile.isPublic !== undefined) {
+      setIsPublic(data.profile.isPublic);
+    }
+  }, [data.profile.isPublic]);
 
-  // Stats
-  const recentSkills = data.skills.length > 3 ? 3 : data.skills.length; // mock
-  const featuredProjects = data.projects.filter(p => p.featured).length;
-
-  // Skill Distribution Data
-  const skillCategories = data.skills.reduce((acc, skill) => {
-    acc[skill.category] = (acc[skill.category] || 0) + 1;
-    return acc;
-  }, {} as Record<string, number>);
-
-  const chartData = Object.keys(skillCategories).map(key => ({
-    name: key,
-    value: skillCategories[key]
-  }));
-
-  // Average progress per category
-  const categoryProgress = Object.keys(skillCategories).map(category => {
-    const skillsInCategory = data.skills.filter(s => s.category === category);
-    const avg = skillsInCategory.reduce((sum, s) => sum + s.progress, 0) / skillsInCategory.length;
-    return { name: category, progress: Math.round(avg) };
-  });
+  const handleToggleVisibility = async (checked: boolean) => {
+    setIsPublic(checked);
+    try {
+      await data.updateProfile({ isPublic: checked });
+      toast.success(checked ? "Portfolio is now public" : "Portfolio is now private");
+    } catch (error) {
+      setIsPublic(!checked);
+      toast.error("Failed to update visibility");
+    }
+  };
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://skillfolio.demo/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`);
+    const username = (data.profile.fullName || 'User').split(' ')[0].toLowerCase();
+    navigator.clipboard.writeText(`${window.location.origin}/portfolio/${username}`);
     toast.success("Portfolio link copied!");
   };
 
-  const mockQuickAdd = (type: string) => {
-    toast.info(`Add ${type} form will open in the full version.`);
-  };
+  if (!data.analytics) {
+    return (
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const { analytics, profile, skills, projects } = data;
+  const username = (profile.fullName || 'User').split(' ')[0];
+
+  const chartData = analytics.skillsByCategory;
+  
+  // Calculate category progress
+  const categoryProgress = analytics.skillsByCategory.map(cat => {
+    const skillsInCategory = skills.filter(s => s.category === cat.name);
+    const avg = skillsInCategory.length > 0 
+      ? skillsInCategory.reduce((sum, s) => sum + s.progress, 0) / skillsInCategory.length 
+      : 0;
+    return { name: cat.name, progress: Math.round(avg) };
+  }).sort((a, b) => b.progress - a.progress);
 
   const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { staggerChildren: 0.1 } } };
   const item = { hidden: { opacity: 0, y: 15 }, show: { opacity: 1, y: 0 } };
@@ -63,11 +74,11 @@ export default function Dashboard() {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-2">Dashboard</h1>
-          <h2 className="text-xl font-semibold mb-1">Good morning, {(data.profile.fullName || 'User').split(' ')[0]} 👋</h2>
+          <h2 className="text-xl font-semibold mb-1">Good morning, {username} 👋</h2>
           <p className="text-muted-foreground">Keep your skills, projects, certifications and achievements organized in one professional portfolio.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to={`/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`}>
+          <Link to={`/portfolio/${username.toLowerCase()}`}>
             <Button variant="outline" className="shadow-sm">View Public Portfolio</Button>
           </Link>
           <DropdownMenu>
@@ -77,10 +88,10 @@ export default function Dashboard() {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="w-48">
-              <DropdownMenuItem onClick={() => mockQuickAdd('Skill')}><Code2 className="w-4 h-4 mr-2"/> Add Skill</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => mockQuickAdd('Project')}><FolderKanban className="w-4 h-4 mr-2"/> Add Project</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => mockQuickAdd('Certification')}><Award className="w-4 h-4 mr-2"/> Add Certification</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => mockQuickAdd('Achievement')}><Trophy className="w-4 h-4 mr-2"/> Add Achievement</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/skills?action=add')}><Code2 className="w-4 h-4 mr-2"/> Add Skill</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/projects?action=add')}><FolderKanban className="w-4 h-4 mr-2"/> Add Project</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/certifications?action=add')}><Award className="w-4 h-4 mr-2"/> Add Certification</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => navigate('/dashboard/achievements?action=add')}><Trophy className="w-4 h-4 mr-2"/> Add Achievement</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
         </div>
@@ -100,10 +111,10 @@ export default function Dashboard() {
                   <div className="relative flex-shrink-0 flex items-center justify-center">
                     <svg className="w-32 h-32 transform -rotate-90">
                       <circle cx="64" cy="64" r="56" fill="transparent" stroke="currentColor" strokeWidth="12" className="text-secondary" />
-                      <circle cx="64" cy="64" r="56" fill="transparent" stroke="currentColor" strokeWidth="12" strokeDasharray="351.8" strokeDashoffset={351.8 - (351.8 * strengthData.total) / 100} className="text-primary transition-all duration-1000 ease-out" strokeLinecap="round" />
+                      <circle cx="64" cy="64" r="56" fill="transparent" stroke="currentColor" strokeWidth="12" strokeDasharray="351.8" strokeDashoffset={351.8 - (351.8 * analytics.portfolioStrength) / 100} className="text-primary transition-all duration-1000 ease-out" strokeLinecap="round" />
                     </svg>
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-3xl font-bold">{strengthData.total}%</span>
+                      <span className="text-3xl font-bold">{analytics.portfolioStrength}%</span>
                     </div>
                   </div>
                   <div className="flex-1 w-full">
@@ -111,13 +122,31 @@ export default function Dashboard() {
                     <p className="text-muted-foreground text-sm mb-6">Your portfolio is looking strong. Complete the remaining items to improve your profile.</p>
                     
                     <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 text-sm">
-                      <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Profile</div>
-                      <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Skills</div>
-                      <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Projects</div>
-                      <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Certifications</div>
-                      <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Achievements</div>
-                      <div className="flex items-center gap-2"><Circle className="w-4 h-4 text-muted-foreground"/> Resume</div>
-                      <div className="flex items-center gap-2 sm:col-span-3 mt-2"><AlertTriangle className="w-4 h-4 text-amber-500"/> Skill Evidence (Needs improvement)</div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.profile.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Profile
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.skills.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Skills
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.projects.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Projects
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.certifications.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Certifications
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.achievements.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Achievements
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {analytics.portfolioStrengthBreakdown.resume.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500"/> : <Circle className="w-4 h-4 text-muted-foreground"/>} Resume
+                      </div>
+                      <div className="flex items-center gap-2 sm:col-span-3 mt-2">
+                        {!analytics.portfolioStrengthBreakdown.evidence.complete ? (
+                          <><AlertTriangle className="w-4 h-4 text-amber-500"/> Skill Evidence (Needs improvement)</>
+                        ) : (
+                          <><CheckCircle2 className="w-4 h-4 text-emerald-500"/> Skill Evidence (Optimized)</>
+                        )}
+                      </div>
                     </div>
                     <div className="mt-6 flex justify-end">
                       <Button variant="secondary" size="sm" onClick={() => document.getElementById('recommendations')?.scrollIntoView({behavior: 'smooth'})}>Improve Portfolio</Button>
@@ -134,40 +163,36 @@ export default function Dashboard() {
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-primary/10 p-2 rounded-lg text-primary group-hover:scale-110 transition-transform"><Code2 className="w-5 h-5"/></div>
-                  <span className="text-2xl font-bold">{data.skills.length}</span>
+                  <span className="text-2xl font-bold">{analytics.totalSkills}</span>
                 </div>
                 <h4 className="font-semibold mb-1">Skills</h4>
-                <p className="text-xs text-emerald-600 font-medium">+{recentSkills} this month</p>
               </CardContent>
             </Card>
             <Card className="border-border/50 bg-card/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer group" onClick={() => navigate('/dashboard/projects')}>
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-accent/10 p-2 rounded-lg text-accent group-hover:scale-110 transition-transform"><FolderKanban className="w-5 h-5"/></div>
-                  <span className="text-2xl font-bold">{data.projects.length}</span>
+                  <span className="text-2xl font-bold">{analytics.totalProjects}</span>
                 </div>
                 <h4 className="font-semibold mb-1">Projects</h4>
-                <p className="text-xs text-muted-foreground font-medium">{featuredProjects} Featured</p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 bg-card/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer group">
+            <Card className="border-border/50 bg-card/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer group" onClick={() => navigate('/dashboard/certifications')}>
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-cyan-500/10 p-2 rounded-lg text-cyan-600 group-hover:scale-110 transition-transform"><Award className="w-5 h-5"/></div>
-                  <span className="text-2xl font-bold">{data.certifications.length}</span>
+                  <span className="text-2xl font-bold">{analytics.totalCertifications}</span>
                 </div>
                 <h4 className="font-semibold mb-1">Certifications</h4>
-                <p className="text-xs text-muted-foreground font-medium">2 Recent</p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 bg-card/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer group">
+            <Card className="border-border/50 bg-card/50 shadow-sm hover:border-primary/20 transition-colors cursor-pointer group" onClick={() => navigate('/dashboard/achievements')}>
               <CardContent className="p-5">
                 <div className="flex justify-between items-start mb-4">
                   <div className="bg-emerald-500/10 p-2 rounded-lg text-emerald-600 group-hover:scale-110 transition-transform"><Trophy className="w-5 h-5"/></div>
-                  <span className="text-2xl font-bold">{data.achievements.length}</span>
+                  <span className="text-2xl font-bold">{analytics.totalAchievements}</span>
                 </div>
                 <h4 className="font-semibold mb-1">Achievements</h4>
-                <p className="text-xs text-muted-foreground font-medium">3 Recent</p>
               </CardContent>
             </Card>
           </motion.div>
@@ -222,7 +247,7 @@ export default function Dashboard() {
                     </PieChart>
                   </ResponsiveContainer>
                   <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none -mt-4">
-                    <span className="text-2xl font-bold text-foreground">{data.skills.length}</span>
+                    <span className="text-2xl font-bold text-foreground">{analytics.totalSkills}</span>
                     <span className="text-xs text-muted-foreground font-medium">Skills</span>
                   </div>
                 </CardContent>
@@ -237,9 +262,9 @@ export default function Dashboard() {
               <p className="text-muted-foreground text-sm">Show how your skills are supported by real projects and certifications.</p>
             </div>
             <div className="grid md:grid-cols-2 gap-4">
-              {data.skills.slice(0, 4).map(skill => {
-                const linkedProjects = data.projects.filter(p => p.relatedSkillIds.includes(skill.id));
-                const linkedCerts = data.certifications.filter(c => c.relatedSkillIds.includes(skill.id));
+              {skills.slice(0, 4).map(skill => {
+                const linkedProjects = projects.filter(p => p.relatedSkillIds && p.relatedSkillIds.includes(skill.id));
+                const linkedCerts = data.certifications.filter(c => c.relatedSkillIds && c.relatedSkillIds.includes(skill.id));
                 const hasEvidence = linkedProjects.length > 0 || linkedCerts.length > 0;
 
                 return (
@@ -289,7 +314,7 @@ export default function Dashboard() {
                             <div className="flex items-center gap-2 text-sm font-medium">
                               <AlertTriangle className="w-4 h-4" /> No supporting evidence yet
                             </div>
-                            <Button variant="outline" size="sm" className="h-7 text-xs bg-white dark:bg-background border-amber-200 hover:bg-amber-50 hover:text-amber-700" onClick={() => mockQuickAdd('Project')}>Add Evidence</Button>
+                            <Button variant="outline" size="sm" className="h-7 text-xs bg-white dark:bg-background border-amber-200 hover:bg-amber-50 hover:text-amber-700" onClick={() => navigate('/dashboard/projects?action=add')}>Add Evidence</Button>
                           </div>
                         )}
                       </div>
@@ -307,7 +332,7 @@ export default function Dashboard() {
               <Button variant="ghost" size="sm" onClick={() => navigate('/dashboard/projects')}>View All</Button>
             </div>
             <div className="grid md:grid-cols-3 gap-4">
-              {data.projects.filter(p => p.featured).slice(0, 3).map(project => (
+              {projects.filter(p => p.featured).slice(0, 3).map(project => (
                 <Card key={project.id} className="border-border/50 bg-card/50 shadow-sm overflow-hidden group cursor-pointer" onClick={() => navigate('/dashboard/projects')}>
                   <div className="h-32 overflow-hidden relative">
                     <img src={project.image} alt={project.title} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
@@ -325,12 +350,12 @@ export default function Dashboard() {
                   </CardContent>
                 </Card>
               ))}
-              {data.projects.filter(p => p.featured).length === 0 && (
+              {projects.filter(p => p.featured).length === 0 && (
                 <Card className="border-border/50 bg-card/50 shadow-sm col-span-3 border-dashed">
                   <CardContent className="p-8 flex flex-col items-center justify-center text-center">
                     <p className="font-medium mb-1">No featured projects yet.</p>
                     <p className="text-sm text-muted-foreground mb-4">Showcase your work and demonstrate your skills.</p>
-                    <Button variant="outline" size="sm" onClick={() => mockQuickAdd('Project')}>Add Your First Project</Button>
+                    <Button variant="outline" size="sm" onClick={() => navigate('/dashboard/projects?action=add')}>Add Your First Project</Button>
                   </CardContent>
                 </Card>
               )}
@@ -350,7 +375,7 @@ export default function Dashboard() {
                 <h3 className="font-bold text-lg mb-1">Your portfolio is ready to share 🚀</h3>
                 <p className="text-white/80 text-sm mb-5">Show recruiters and mentors what you've built.</p>
                 <div className="flex flex-col gap-2">
-                  <Link to={`/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`} className="w-full">
+                  <Link to={`/portfolio/${username.toLowerCase()}`} className="w-full">
                     <Button variant="secondary" className="w-full text-primary hover:bg-white/90">View Public Portfolio</Button>
                   </Link>
                   <Button variant="outline" className="w-full bg-transparent border-white/30 text-white hover:bg-white/10" onClick={handleCopyLink}>
@@ -371,7 +396,7 @@ export default function Dashboard() {
                     {isPublic ? 'Visible to anyone with the link' : 'Private to you only'}
                   </p>
                 </div>
-                <Switch checked={isPublic} onCheckedChange={setIsPublic} className="data-[state=checked]:bg-emerald-500" />
+                <Switch checked={isPublic} onCheckedChange={handleToggleVisibility} className="data-[state=checked]:bg-emerald-500" />
               </CardContent>
             </Card>
           </motion.div>
@@ -387,7 +412,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border/50">
-                  {recommendations.slice(0, 4).map(rec => (
+                  {analytics.recommendations.slice(0, 4).map(rec => (
                     <div key={rec.id} className="p-4 hover:bg-secondary/30 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -400,7 +425,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   ))}
-                  {recommendations.length === 0 && (
+                  {analytics.recommendations.length === 0 && (
                     <div className="p-6 text-center text-sm text-muted-foreground">
                       Your portfolio is completely optimized! Great job.
                     </div>
@@ -418,32 +443,32 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.profile.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Profile information
+                  {analytics.portfolioStrengthBreakdown.profile.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Profile information
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.skills.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 8+ Skills
+                  {analytics.portfolioStrengthBreakdown.skills.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 8+ Skills
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.projects.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 4+ Projects
+                  {analytics.portfolioStrengthBreakdown.projects.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 4+ Projects
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.certifications.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 3+ Certifications
+                  {analytics.portfolioStrengthBreakdown.certifications.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 3+ Certifications
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.achievements.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 3+ Achievements
+                  {analytics.portfolioStrengthBreakdown.achievements.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} 3+ Achievements
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.evidence.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Skill evidence mapped
+                  {analytics.portfolioStrengthBreakdown.evidence.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Skill evidence mapped
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  {strengthData.breakdown.resume.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Resume verified
+                  {analytics.portfolioStrengthBreakdown.resume.complete ? <CheckCircle2 className="w-4 h-4 text-emerald-500" /> : <Circle className="w-4 h-4" />} Resume verified
                 </div>
                 
                 <div className="mt-4 pt-4 border-t border-border/50">
                   <div className="flex justify-between text-xs font-medium mb-1">
-                    <span>{Object.values(strengthData.breakdown).filter(v => v.complete).length} / 7 completed</span>
+                    <span>{Object.values(analytics.portfolioStrengthBreakdown).filter(v => v.complete).length} / 7 completed</span>
                   </div>
-                  <Progress value={(Object.values(strengthData.breakdown).filter(v => v.complete).length / 7) * 100} className="h-1.5" />
+                  <Progress value={(Object.values(analytics.portfolioStrengthBreakdown).filter(v => v.complete).length / 7) * 100} className="h-1.5" />
                 </div>
               </CardContent>
             </Card>
@@ -457,26 +482,16 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border/50 before:to-transparent">
-                  <div className="relative">
-                    <div className="absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-primary ring-4 ring-card"></div>
-                    <p className="text-sm font-medium">Added React skill</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">2 hours ago</p>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-accent ring-4 ring-card"></div>
-                    <p className="text-sm font-medium">Updated GROUPS.BIT project</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">Yesterday</p>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-emerald-500 ring-4 ring-card"></div>
-                    <p className="text-sm font-medium">Added AWS Cloud Practitioner</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">3 days ago</p>
-                  </div>
-                  <div className="relative">
-                    <div className="absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-amber-500 ring-4 ring-card"></div>
-                    <p className="text-sm font-medium">Added Hackathon Finalist</p>
-                    <p className="text-xs text-muted-foreground mt-0.5">5 days ago</p>
-                  </div>
+                  {analytics.recentActivity.map(act => (
+                    <div key={act.id} className="relative">
+                      <div className={`absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-${act.type === 'primary' ? 'primary' : act.type === 'secondary' ? 'secondary' : act.type === 'accent' ? 'accent' : act.type === 'emerald' ? 'emerald-500' : act.type === 'amber' ? 'amber-500' : 'primary'} ring-4 ring-card`}></div>
+                      <p className="text-sm font-medium">{act.action}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{act.target} • {formatDistanceToNow(new Date(act.date))} ago</p>
+                    </div>
+                  ))}
+                  {analytics.recentActivity.length === 0 && (
+                    <p className="text-sm text-muted-foreground">No recent activity.</p>
+                  )}
                 </div>
               </CardContent>
             </Card>

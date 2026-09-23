@@ -1,6 +1,6 @@
 const Certification = require('../models/Certification');
 const Skill = require('../models/Skill');
-
+const { logActivity } = require('../services/activityService');
 // @desc    Get all certifications for current user
 // @route   GET /api/certifications
 // @access  Private
@@ -63,6 +63,8 @@ const createCertification = async (req, res) => {
       );
     }
 
+    await logActivity(req.user.id, 'Added certification', certification.title, 'emerald');
+
     res.status(201).json({ success: true, data: certification });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -122,6 +124,8 @@ const updateCertification = async (req, res) => {
       }
     }
 
+    await logActivity(req.user.id, 'Updated certification', certification.title, 'secondary');
+
     res.status(200).json({ success: true, data: certification });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -148,6 +152,8 @@ const deleteCertification = async (req, res) => {
         { $pull: { certifications: certification._id } }
       );
     }
+
+    await logActivity(req.user.id, 'Deleted certification', certification.title, 'amber');
 
     res.status(200).json({ success: true, message: 'Certification removed' });
   } catch (error) {

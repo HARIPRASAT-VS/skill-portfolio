@@ -1,6 +1,6 @@
 const Project = require('../models/Project');
 const Skill = require('../models/Skill');
-
+const { logActivity } = require('../services/activityService');
 // @desc    Get all projects for current user
 // @route   GET /api/projects
 // @access  Private
@@ -77,6 +77,8 @@ const createProject = async (req, res) => {
       );
     }
 
+    await logActivity(req.user.id, 'Added new project', project.title, 'accent');
+
     res.status(201).json({ success: true, data: project });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -136,6 +138,8 @@ const updateProject = async (req, res) => {
       }
     }
 
+    await logActivity(req.user.id, 'Updated project', project.title, 'secondary');
+
     res.status(200).json({ success: true, data: project });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -162,6 +166,8 @@ const deleteProject = async (req, res) => {
         { $pull: { projects: project._id } }
       );
     }
+
+    await logActivity(req.user.id, 'Deleted project', project.title, 'amber');
 
     res.status(200).json({ success: true, message: 'Project removed' });
   } catch (error) {
