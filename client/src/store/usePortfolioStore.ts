@@ -44,6 +44,16 @@ export const usePortfolioStore = create<PortfolioState>()(
       ...emptyData,
       fetchData: async () => {
         try {
+          // Auto-login for demo purposes if not authorized
+          try {
+            await apiClient.get('/profile');
+          } catch (err: any) {
+            if (err.message && err.message.toLowerCase().includes('not authorized')) {
+              console.log("Not authorized, attempting demo login...");
+              await apiClient.post('/auth/demo').catch(e => console.error("Demo login failed:", e));
+            }
+          }
+
           const [profile, skills, projects, certifications, achievements, analytics] = await Promise.all([
             apiClient.get('/profile').then((r: any) => r.data).catch(() => ({})),
             apiClient.get('/skills').then((r: any) => r.data).catch(() => []),

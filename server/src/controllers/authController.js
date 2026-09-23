@@ -42,8 +42,8 @@ const registerUser = async (req, res) => {
     // Set cookie
     res.cookie('jwt', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
@@ -87,8 +87,8 @@ const loginUser = async (req, res) => {
     // Set cookie
     res.cookie('jwt', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV !== 'development',
-      sameSite: 'strict',
+      secure: true,
+      sameSite: 'none',
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
     });
 
@@ -135,9 +135,46 @@ const getMe = async (req, res) => {
   }
 };
 
+// @desc    Login as demo user
+// @route   POST /api/auth/demo
+// @access  Public
+const loginDemo = async (req, res) => {
+  try {
+    // Just find the first user in the DB
+    const user = await User.findOne();
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No users found in the database. Please run /api/seed' });
+    }
+
+    const token = generateToken(user._id);
+
+    res.cookie('jwt', token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      maxAge: 30 * 24 * 60 * 60 * 1000,
+    });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        _id: user._id,
+        name: user.name,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+        token
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   registerUser,
   loginUser,
   logoutUser,
   getMe,
+  loginDemo,
 };
