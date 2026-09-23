@@ -54,10 +54,10 @@ export default function Dashboard() {
   const { analytics, profile, skills, projects } = data;
   const username = (profile.fullName || 'User').split(' ')[0];
 
-  const chartData = analytics.skillsByCategory;
+  const chartData = analytics.skillsByCategory || [];
   
   // Calculate category progress
-  const categoryProgress = analytics.skillsByCategory.map(cat => {
+  const categoryProgress = (analytics.skillsByCategory || []).map(cat => {
     const skillsInCategory = skills.filter(s => s.category === cat.name);
     const avg = skillsInCategory.length > 0 
       ? skillsInCategory.reduce((sum, s) => sum + s.progress, 0) / skillsInCategory.length 
@@ -412,7 +412,7 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="p-0">
                 <div className="divide-y divide-border/50">
-                  {analytics.recommendations.slice(0, 4).map(rec => (
+                  {(analytics.recommendations || []).slice(0, 4).map(rec => (
                     <div key={rec.id} className="p-4 hover:bg-secondary/30 transition-colors">
                       <div className="flex items-start justify-between gap-2">
                         <div>
@@ -425,7 +425,7 @@ export default function Dashboard() {
                       </Button>
                     </div>
                   ))}
-                  {analytics.recommendations.length === 0 && (
+                  {(analytics.recommendations || []).length === 0 && (
                     <div className="p-6 text-center text-sm text-muted-foreground">
                       Your portfolio is completely optimized! Great job.
                     </div>
@@ -482,14 +482,14 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent>
                 <div className="relative pl-6 space-y-6 before:absolute before:inset-0 before:ml-2.5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border/50 before:to-transparent">
-                  {analytics.recentActivity.map(act => (
+                  {(analytics.recentActivity || []).map(act => (
                     <div key={act.id} className="relative">
                       <div className={`absolute left-[-1.5rem] mt-1 h-3 w-3 rounded-full bg-${act.type === 'primary' ? 'primary' : act.type === 'secondary' ? 'secondary' : act.type === 'accent' ? 'accent' : act.type === 'emerald' ? 'emerald-500' : act.type === 'amber' ? 'amber-500' : 'primary'} ring-4 ring-card`}></div>
                       <p className="text-sm font-medium">{act.action}</p>
                       <p className="text-xs text-muted-foreground mt-0.5">{act.target} • {formatDistanceToNow(new Date(act.date))} ago</p>
                     </div>
                   ))}
-                  {analytics.recentActivity.length === 0 && (
+                  {(analytics.recentActivity || []).length === 0 && (
                     <p className="text-sm text-muted-foreground">No recent activity.</p>
                   )}
                 </div>
