@@ -1,10 +1,23 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import apiClient from '../services/apiClient';
 import { ArrowRight, Sparkles, ShieldCheck, TrendingUp, Globe, LayoutTemplate } from 'lucide-react';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 
 export default function LandingPage() {
+  const [demoUsername, setDemoUsername] = useState<string | null>(null);
+
+  useEffect(() => {
+    apiClient.get('/portfolio/demo/username')
+      .then((res: any) => {
+        if (res.data && res.data.username) {
+          setDemoUsername(res.data.username);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch demo username", err));
+  }, []);
   const containerVariants: any = {
     hidden: { opacity: 0 },
     show: {
@@ -46,7 +59,7 @@ export default function LandingPage() {
           <span className="text-xl font-bold tracking-tight text-white">SkillFolio</span>
         </div>
         <div className="flex items-center gap-4">
-          <Link to="/portfolio/preview" className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
+          <Link to={demoUsername ? `/portfolio/${demoUsername}` : '#'} className="text-sm font-medium text-slate-300 hover:text-white transition-colors hidden sm:block">
             Preview Example
           </Link>
           <Link to="/dashboard">
@@ -94,8 +107,8 @@ export default function LandingPage() {
                 Go to Dashboard <ArrowRight className="ml-2 w-5 h-5" />
               </Button>
             </Link>
-            <Link to="/portfolio/preview" className="w-full sm:w-auto">
-              <Button size="lg" variant="outline" className="w-full sm:w-auto h-14 px-8 rounded-full text-lg font-semibold border-white/20 text-white hover:bg-white/5 hover:text-white transition-all hover:scale-105 bg-black/50 backdrop-blur-md">
+            <Link to={demoUsername ? `/portfolio/${demoUsername}` : '#'} className="w-full sm:w-auto">
+              <Button size="lg" variant="outline" disabled={!demoUsername} className="w-full sm:w-auto h-14 px-8 rounded-full text-lg font-semibold border-white/20 text-white hover:bg-white/5 hover:text-white transition-all hover:scale-105 bg-black/50 backdrop-blur-md">
                 View Portfolio <Globe className="ml-2 w-5 h-5" />
               </Button>
             </Link>

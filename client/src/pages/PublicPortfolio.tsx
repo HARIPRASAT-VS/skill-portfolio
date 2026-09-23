@@ -1,22 +1,45 @@
 import { useState, useEffect } from 'react';
-import { usePortfolioStore } from '../store/usePortfolioStore';
+import { useParams } from 'react-router-dom';
+import apiClient from '../services/apiClient';
 import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Progress } from '../components/ui/progress';
 import { Card, CardContent } from '../components/ui/card';
-import { GitBranch, UserCircle, Mail, ExternalLink, Menu, X, FileText, Download, Share2, Award, Trophy, FolderKanban, ChevronRight, Lock, MapPin } from 'lucide-react';
+import { GitBranch, UserCircle, Mail, ExternalLink, Menu, X, FileText, Download, Share2, Award, Trophy, FolderKanban, ChevronRight, MapPin } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 
 export default function PublicPortfolio() {
-  const { profile, skills, projects, certifications, achievements } = usePortfolioStore();
+  const { username } = useParams<{ username: string }>();
+  const [data, setData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!username) return;
+    setLoading(true);
+    apiClient.get('/portfolio/' + username)
+      .then((res: any) => {
+        if (res.data && res.data.success) {
+          setData(res.data.data);
+        } else {
+          setError('User not found');
+        }
+      })
+      .catch((err) => {
+        setError(err.response?.data?.message || 'Error fetching portfolio');
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, [username]);
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // Since we don't have a backend visibility state in the prompt specifically for the public page, 
   // we'll assume it's public unless a specific condition is met. The prompt said "If visibility is disabled".
   // We'll add a mock check. For now, it's public.
-  const isPublic = true; // In a real app, this would check store or DB
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,17 +70,28 @@ export default function PublicPortfolio() {
     toast.success("Resume download will be available once a resume is uploaded.");
   };
 
-  if (!isPublic) {
+  if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
-        <Lock className="w-16 h-16 text-muted-foreground mb-4 opacity-50" />
-        <h1 className="text-2xl font-bold mb-2">Portfolio Not Available</h1>
-        <p className="text-muted-foreground">This student has currently set their portfolio to private.</p>
+        <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p className="text-muted-foreground">Loading portfolio...</p>
       </div>
     );
   }
 
-  const groupedSkills = skills.reduce((acc, skill) => {
+  if (error || !data || !data.profile) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-4">
+        <UserCircle className="w-16 h-16 text-muted-foreground mb-4 opacity-50" />
+        <h1 className="text-2xl font-bold mb-2">Portfolio Not Found</h1>
+        <p className="text-muted-foreground">{error || 'This user does not exist or has no public profile.'}</p>
+      </div>
+    );
+  }
+
+  const { profile, skills, projects, certifications, achievements } = data as { profile: any, skills: any[], projects: any[], certifications: any[], achievements: any[] };
+
+  const groupedSkills = skills.reduce((acc: any, skill: any) => {
     if (!acc[skill.category]) acc[skill.category] = [];
     acc[skill.category].push(skill);
     return acc;
@@ -174,7 +208,7 @@ export default function PublicPortfolio() {
               <div className="h-24 bg-gradient-to-r from-primary/80 to-accent/80 rounded-t-xl"></div>
               <CardContent className="px-8 pb-8 pt-0 relative">
                 <div className="w-24 h-24 bg-background rounded-full flex items-center justify-center text-3xl font-bold text-primary shadow-xl border-4 border-background -mt-12 mb-6">
-                  {(profile.fullName || 'User').split(' ').map(n => n[0]).join('').substring(0,2)}
+                  {(profile.fullName || 'User').split(' ').map((n: any) => n[0]).join('').substring(0,2)}
                 </div>
                 <h3 className="text-xl font-bold">{profile.fullName}</h3>
                 <p className="text-primary font-medium mb-4">{profile.degree}</p>
@@ -252,7 +286,7 @@ export default function PublicPortfolio() {
                 <div>
                   <h4 className="text-sm text-muted-foreground font-medium mb-3 uppercase tracking-wider">Interests</h4>
                   <div className="flex flex-wrap gap-2">
-                    {profile.interests.map(interest => (
+                    {profile.interests.map((interest: any) => (
                       <Badge key={interest} variant="secondary" className="font-normal bg-secondary/60">{interest}</Badge>
                     ))}
                   </div>
@@ -354,7 +388,7 @@ export default function PublicPortfolio() {
             <div key={category}>
               <h3 className="text-lg font-bold border-b border-border pb-2 mb-4">{category}</h3>
               <div className="flex flex-wrap gap-2">
-                {catSkills.map(s => (
+                {(catSkills as any[]).map((s: any) => (
                   <Badge key={s.id} variant="secondary" className="px-3 py-1.5 text-sm font-medium bg-secondary/60 hover:bg-secondary">
                     {s.name}
                   </Badge>
@@ -379,7 +413,7 @@ export default function PublicPortfolio() {
                 <p className="text-lg text-muted-foreground">Projects will appear here as they are added.</p>
               </div>
             ) : (
-              projects.map((project, index) => (
+              projects.map((project: any, index: number) => (
                 <motion.div 
                   key={project.id}
                   initial={{ opacity: 0, y: 30 }}
@@ -410,7 +444,7 @@ export default function PublicPortfolio() {
                     <div className="space-y-3">
                       <h4 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Technologies</h4>
                       <div className="flex flex-wrap gap-2">
-                        {project.technologies.map(tech => (
+                        {project.technologies.map((tech: any) => (
                           <Badge key={tech} variant="outline" className="font-mono text-xs">{tech}</Badge>
                         ))}
                       </div>

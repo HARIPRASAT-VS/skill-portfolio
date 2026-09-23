@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PortfolioData, Skill, Project, Certification, Achievement, Profile } from '../types';
 import apiClient from '../services/apiClient';
-import { initialMockData } from '../data/mockData';
 
 interface PortfolioState extends PortfolioData {
   fetchData: () => Promise<void>;
@@ -43,10 +42,6 @@ export const usePortfolioStore = create<PortfolioState>()(
     (set) => ({
       ...emptyData,
       fetchData: async () => {
-        if (import.meta.env.VITE_USE_MOCK_DATA === 'true') {
-          set(initialMockData);
-          return;
-        }
         try {
           const [profile, skills, projects, certifications, achievements] = await Promise.all([
             apiClient.get('/profile').then((r: any) => r.data).catch(() => ({})),

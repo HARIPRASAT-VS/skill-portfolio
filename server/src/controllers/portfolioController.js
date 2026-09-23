@@ -53,6 +53,22 @@ const getPublicPortfolio = async (req, res) => {
   }
 };
 
+// @desc    Get a demo username (first user in DB)
+// @route   GET /api/portfolio/demo/username
+// @access  Public
+const getDemoUsername = async (req, res) => {
+  try {
+    const user = await User.findOne({});
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'No users found in database' });
+    }
+    res.status(200).json({ success: true, username: user.username });
+  } catch (error) {
+    res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 module.exports = {
   getPublicPortfolio,
+  getDemoUsername,
 };
