@@ -49,7 +49,16 @@ const Certifications = () => <ComingSoon title="Certifications" description="Man
 const Analytics = () => <ComingSoon title="Analytics" description="Deep dive into your portfolio's performance and recruiter engagement metrics." icon={BarChart3} />;
 const PortfolioPreview = () => <div className="p-6"><h1 className="text-2xl font-bold">Portfolio Preview</h1></div>;
 
+import { useEffect } from 'react';
+import { usePortfolioStore } from './store/usePortfolioStore';
+
 function App() {
+  const fetchData = usePortfolioStore((state) => state.fetchData);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
   return (
     <BrowserRouter>
       <Routes>
