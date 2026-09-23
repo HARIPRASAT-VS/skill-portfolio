@@ -49,6 +49,7 @@ const certificationRoutes = require('./routes/certificationRoutes');
 const achievementRoutes = require('./routes/achievementRoutes');
 const portfolioRoutes = require('./routes/portfolioRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
+const { seedData } = require('./controllers/seedController');
 
 // Mount routers
 app.use('/api/auth', authRoutes);
@@ -59,6 +60,9 @@ app.use('/api/certifications', certificationRoutes);
 app.use('/api/achievements', achievementRoutes);
 app.use('/api/portfolio', portfolioRoutes);
 app.use('/api/analytics', analyticsRoutes);
+
+// Seed route (for deployment)
+app.get('/api/seed', seedData);
 
 // Base route
 app.get('/', (req, res) => {
