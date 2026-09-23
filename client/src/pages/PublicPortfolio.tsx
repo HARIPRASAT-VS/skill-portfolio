@@ -20,8 +20,8 @@ export default function PublicPortfolio() {
     setLoading(true);
     apiClient.get('/portfolio/' + username)
       .then((res: any) => {
-        if (res.data && res.data.success) {
-          setData(res.data.data);
+        if (res.success && res.data) {
+          setData(res.data);
         } else {
           setError('User not found');
         }
