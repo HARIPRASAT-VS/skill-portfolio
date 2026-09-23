@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Switch } from '../components/ui/switch';
-import { Search, Plus, Trash2, Edit, Globe, Lock, AlertTriangle, ArrowRight, Activity, Calendar, Trophy, Medal, MapPin, Award, Star, Zap } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, Globe, Lock, AlertTriangle, ArrowRight, Activity, Calendar, Trophy, Medal, MapPin, Award, Star, Zap, LayoutTemplate } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -18,7 +18,7 @@ export default function Achievements() {
   const navigate = useNavigate();
   const { 
     achievements, skills, projects, profile,
-    addAchievement, updateAchievement, deleteAchievement, toggleAchievementVisibility
+    addAchievement, updateAchievement, deleteAchievement, 
   } = usePortfolioStore();
 
   // Filters
@@ -595,7 +595,7 @@ export default function Achievements() {
 
               <DialogFooter>
                 <div className="flex w-full justify-end gap-2">
-                   <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={(e) => { setIsDetailModalOpen(false); setActiveAchievement(activeAchievement); setIsDeleteModalOpen(true); }}><Trash2 className="w-4 h-4 mr-2"/> Delete</Button>
+                   <Button variant="ghost" className="text-destructive hover:text-destructive hover:bg-destructive/10" onClick={() => { setIsDetailModalOpen(false); setActiveAchievement(activeAchievement); setIsDeleteModalOpen(true); }}><Trash2 className="w-4 h-4 mr-2"/> Delete</Button>
                    <Button onClick={(e) => { setIsDetailModalOpen(false); handleOpenEditModal(activeAchievement, e); }}><Edit className="w-4 h-4 mr-2"/> Edit Achievement</Button>
                 </div>
               </DialogFooter>

@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Profile } from '../types';
+import type { Profile } from '../types';
 
 export const profileService = {
   getProfile: (): Promise<{success: boolean, data: Profile}> => {

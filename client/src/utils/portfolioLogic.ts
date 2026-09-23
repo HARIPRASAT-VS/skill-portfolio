@@ -1,4 +1,4 @@
-import type { PortfolioData, Profile, Skill, Project, Certification, Achievement } from '../types';
+import type { PortfolioData } from '../types';
 
 export interface Recommendation {
   id: string;
@@ -44,7 +44,7 @@ export function calculatePortfolioStrength(data: PortfolioData): {
   }
 
   // Resume check - Assuming if fileText is empty or not in our dummy data, they didn't add it. Since we just have a button, we'll give 0 for now unless profile is complete (dummy logic)
-  const resumeScore = 0; // We'll say 0 until they upload one. Wait, the mock says "Resume verification ○ Missing". So 0.
+  let resumeScore = 0; // We'll say 0 until they upload one. Wait, the mock says "Resume verification ○ Missing". So 0.
 
   const total = Math.round(profileScore + skillsScore + projectsScore + certificationsScore + achievementsScore + evidenceScore + resumeScore);
 

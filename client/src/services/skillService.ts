@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Skill } from '../types';
+import type { Skill } from '../types';
 
 export const skillService = {
   getSkills: (): Promise<{success: boolean, data: Skill[]}> => {

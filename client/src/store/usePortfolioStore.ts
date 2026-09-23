@@ -19,6 +19,11 @@ interface PortfolioState extends PortfolioData {
   addAchievement: (achievement: Omit<Achievement, 'id'>) => Promise<void>;
   updateAchievement: (id: string, achievement: Partial<Achievement>) => Promise<void>;
   deleteAchievement: (id: string) => Promise<void>;
+  toggleSkillVisibility: (id: string) => Promise<void>;
+  toggleProjectVisibility: (id: string) => Promise<void>;
+  toggleFeaturedProject: (id: string) => Promise<void>;
+  addEvidence: (skillId: string, evidence: {projects?: string[], certifications?: string[]}) => Promise<void>;
+  removeEvidence: (skillId: string, evidence: {projects?: string[], certifications?: string[]}) => Promise<void>;
 }
 
 const emptyData: PortfolioData = {
@@ -31,7 +36,7 @@ const emptyData: PortfolioData = {
 
 export const usePortfolioStore = create<PortfolioState>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       ...emptyData,
       fetchData: async () => {
         if (import.meta.env.VITE_USE_MOCK_DATA === 'true') {
@@ -61,11 +66,11 @@ export const usePortfolioStore = create<PortfolioState>()(
       },
       updateSkill: async (id, updates) => {
         const res = await apiClient.put(`/skills/${id}`, updates) as any;
-        set((state) => ({ skills: state.skills.map(s => s._id === id || s.id === id ? res.data : s) }));
+        set((state) => ({ skills: state.skills.map(s => (s as any)._id === id || s.id === id ? res.data : s) }));
       },
       deleteSkill: async (id) => {
         await apiClient.delete(`/skills/${id}`);
-        set((state) => ({ skills: state.skills.filter(s => s._id !== id && s.id !== id) }));
+        set((state) => ({ skills: state.skills.filter(s => (s as any)._id !== id && s.id !== id) }));
       },
       addProject: async (project) => {
         const res = await apiClient.post('/projects', project) as any;
@@ -73,11 +78,11 @@ export const usePortfolioStore = create<PortfolioState>()(
       },
       updateProject: async (id, updates) => {
         const res = await apiClient.put(`/projects/${id}`, updates) as any;
-        set((state) => ({ projects: state.projects.map(p => p._id === id || p.id === id ? res.data : p) }));
+        set((state) => ({ projects: state.projects.map(p => (p as any)._id === id || p.id === id ? res.data : p) }));
       },
       deleteProject: async (id) => {
         await apiClient.delete(`/projects/${id}`);
-        set((state) => ({ projects: state.projects.filter(p => p._id !== id && p.id !== id) }));
+        set((state) => ({ projects: state.projects.filter(p => (p as any)._id !== id && p.id !== id) }));
       },
       addCertification: async (cert) => {
         const res = await apiClient.post('/certifications', cert) as any;
@@ -85,11 +90,11 @@ export const usePortfolioStore = create<PortfolioState>()(
       },
       updateCertification: async (id, updates) => {
         const res = await apiClient.put(`/certifications/${id}`, updates) as any;
-        set((state) => ({ certifications: state.certifications.map(c => c._id === id || c.id === id ? res.data : c) }));
+        set((state) => ({ certifications: state.certifications.map(c => (c as any)._id === id || c.id === id ? res.data : c) }));
       },
       deleteCertification: async (id) => {
         await apiClient.delete(`/certifications/${id}`);
-        set((state) => ({ certifications: state.certifications.filter(c => c._id !== id && c.id !== id) }));
+        set((state) => ({ certifications: state.certifications.filter(c => (c as any)._id !== id && c.id !== id) }));
       },
       addAchievement: async (achievement) => {
         const res = await apiClient.post('/achievements', achievement) as any;
@@ -97,12 +102,17 @@ export const usePortfolioStore = create<PortfolioState>()(
       },
       updateAchievement: async (id, updates) => {
         const res = await apiClient.put(`/achievements/${id}`, updates) as any;
-        set((state) => ({ achievements: state.achievements.map(a => a._id === id || a.id === id ? res.data : a) }));
+        set((state) => ({ achievements: state.achievements.map(a => (a as any)._id === id || a.id === id ? res.data : a) }));
       },
       deleteAchievement: async (id) => {
         await apiClient.delete(`/achievements/${id}`);
-        set((state) => ({ achievements: state.achievements.filter(a => a._id !== id && a.id !== id) }));
-      }
+        set((state) => ({ achievements: state.achievements.filter(a => (a as any)._id !== id && a.id !== id) }));
+      },
+      toggleSkillVisibility: async (_id) => {},
+      toggleProjectVisibility: async (_id) => {},
+      toggleFeaturedProject: async (_id) => {},
+      addEvidence: async (_skillId, _evidence) => {},
+      removeEvidence: async (_skillId, _evidence) => {}
     }),
     {
       name: 'skillfolio-storage',

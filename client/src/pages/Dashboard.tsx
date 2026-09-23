@@ -7,7 +7,7 @@ import { Button } from '../components/ui/button';
 import { Badge } from '../components/ui/badge';
 import { Switch } from '../components/ui/switch';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../components/ui/dropdown-menu';
-import { Code2, FolderKanban, Award, Trophy, ChevronDown, CheckCircle2, Circle, AlertTriangle, ArrowRight, Activity, Copy, Eye, Plus, FileCode2 } from 'lucide-react';
+import { Code2, FolderKanban, Award, Trophy, ChevronDown, CheckCircle2, Circle, AlertTriangle, ArrowRight, Activity, Copy, Plus, FileCode2 } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip as RechartsTooltip, Legend } from 'recharts';
@@ -213,7 +213,7 @@ export default function Dashboard() {
                         dataKey="value"
                         stroke="none"
                       >
-                        {chartData.map((entry, index) => (
+                        {chartData.map((_, index) => (
                           <Cell key={`cell-${index}`} fill={CHART_COLORS[index % CHART_COLORS.length]} />
                         ))}
                       </Pie>

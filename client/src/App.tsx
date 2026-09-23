@@ -8,7 +8,7 @@ import Profile from './pages/Profile';
 
 import PublicPortfolio from './pages/PublicPortfolio';
 import Achievements from './pages/Achievements';
-import { LayoutTemplate, Construction, Sparkles, Award, BarChart3 } from 'lucide-react';
+import { Sparkles, Award, BarChart3 } from 'lucide-react';
 
 const ComingSoon = ({ title, description, icon: Icon }: { title: string, description: string, icon: any }) => (
   <div className="space-y-8 pb-12 w-full max-w-5xl mx-auto">

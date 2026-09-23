@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Project, Certification, Achievement } from '../types';
+import type { Project, Certification, Achievement } from '../types';
 
 export const projectService = {
   getProjects: (): Promise<{success: boolean, data: Project[]}> => {

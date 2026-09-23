@@ -9,7 +9,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Label } from '../components/ui/label';
 import { Textarea } from '../components/ui/textarea';
 import { Switch } from '../components/ui/switch';
-import { Search, Plus, ExternalLink, Trash2, Edit, GitBranch, Globe, Star, Play, Lock, AlertTriangle, ArrowRight, Activity, Calendar, LayoutTemplate } from 'lucide-react';
+import { Search, Plus, Trash2, Edit, GitBranch, Globe, Star, Play, Lock, AlertTriangle, ArrowRight, Activity, Calendar, LayoutTemplate } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
@@ -41,8 +41,8 @@ function ProjectImage({ src, title }: { src: string, title: string }) {
 export default function Projects() {
   const navigate = useNavigate();
   const { 
-    projects, skills, certifications, profile,
-    addProject, updateProject, deleteProject, toggleProjectVisibility, toggleFeaturedProject 
+    projects, skills, profile,
+    addProject, updateProject, deleteProject 
   } = usePortfolioStore();
 
   // Filters
