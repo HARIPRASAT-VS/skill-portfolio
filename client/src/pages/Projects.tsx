@@ -83,12 +83,12 @@ export default function Projects() {
         project.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
         project.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
         project.role.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        project.technologies.some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
+        (project.technologies || []).some(t => t.toLowerCase().includes(searchQuery.toLowerCase()));
       
       const matchesCategory = categoryFilter === 'All' || project.category === categoryFilter;
       const matchesStatus = statusFilter === 'All' || project.status === statusFilter;
       const matchesFeatured = featuredFilter === 'All' ? true : featuredFilter === 'Featured' ? project.featured : !project.featured;
-      const matchesTech = techFilter === 'All' || project.technologies.includes(techFilter);
+      const matchesTech = techFilter === 'All' || (project.technologies || []).includes(techFilter);
 
       return matchesSearch && matchesCategory && matchesStatus && matchesFeatured && matchesTech;
     }).sort((a, b) => {
@@ -124,7 +124,7 @@ export default function Projects() {
   const handleAddTech = (e: React.KeyboardEvent | React.MouseEvent) => {
     if ((e.type === 'keydown' && (e as React.KeyboardEvent).key !== 'Enter') || !techInput.trim()) return;
     e.preventDefault();
-    if (!formData.technologies?.includes(techInput.trim())) {
+    if (!(formData.technologies || []).includes(techInput.trim())) {
       setFormData({ ...formData, technologies: [...(formData.technologies || []), techInput.trim()] });
     }
     setTechInput('');
@@ -320,8 +320,8 @@ export default function Projects() {
                         {project.technologies.slice(0,4).map(tech => (
                           <Badge key={tech} variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">{tech}</Badge>
                         ))}
-                        {project.technologies.length > 4 && (
-                          <Badge variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">+{project.technologies.length - 4}</Badge>
+                        {(project.technologies || []).length > 4 && (
+                          <Badge variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">+{(project.technologies || []).length - 4}</Badge>
                         )}
                       </div>
                     </div>
@@ -504,7 +504,7 @@ export default function Projects() {
                       <input 
                         type="checkbox" 
                         className="mt-1 accent-primary" 
-                        checked={formData.relatedSkillIds?.includes(skill.id)} 
+                        checked={(formData.relatedSkillIds || []).includes(skill.id)} 
                         onChange={(e) => {
                           const currentIds = formData.relatedSkillIds || [];
                           if (e.target.checked) setFormData({...formData, relatedSkillIds: [...currentIds, skill.id]});

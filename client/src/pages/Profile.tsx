@@ -28,9 +28,9 @@ export default function Profile() {
   if (achievements.length > 0) strength += Math.min(10, achievements.length * 5);
   
   const evidenceScore = skills.filter(s => 
-    projects.some(p => p.relatedSkillIds.includes(s.id)) ||
-    certifications.some(c => c.relatedSkillIds.includes(s.id)) ||
-    achievements.some(a => a.relatedSkillIds.includes(s.id))
+    projects.some(p => (p.relatedSkillIds || []).includes(s.id)) ||
+    certifications.some(c => (c.relatedSkillIds || []).includes(s.id)) ||
+    achievements.some(a => (a.relatedSkillIds || []).includes(s.id))
   ).length * 5;
   
   strength += Math.min(15, evidenceScore);
@@ -317,11 +317,11 @@ export default function Profile() {
                 <CardTitle className="text-lg">Social & Professional Links</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
-                <a href={profile.github.includes('http') ? profile.github : '#'} className="flex items-center p-3 rounded-lg hover:bg-secondary/50 transition-colors border border-transparent hover:border-border/50 group cursor-pointer text-sm">
+                <a href={(profile.github || "").includes('http') ? profile.github : '#'} className="flex items-center p-3 rounded-lg hover:bg-secondary/50 transition-colors border border-transparent hover:border-border/50 group cursor-pointer text-sm">
                   <GitBranch className="w-5 h-5 mr-3 text-muted-foreground group-hover:text-foreground transition-colors" />
                   <span className="text-muted-foreground group-hover:text-foreground transition-colors">{profile.github}</span>
                 </a>
-                <a href={profile.linkedin.includes('http') ? profile.linkedin : '#'} className="flex items-center p-3 rounded-lg hover:bg-secondary/50 transition-colors border border-transparent hover:border-border/50 group cursor-pointer text-sm">
+                <a href={(profile.linkedin || "").includes('http') ? profile.linkedin : '#'} className="flex items-center p-3 rounded-lg hover:bg-secondary/50 transition-colors border border-transparent hover:border-border/50 group cursor-pointer text-sm">
                   <UserCircle className="w-5 h-5 mr-3 text-muted-foreground group-hover:text-[#0A66C2] transition-colors" />
                   <span className="text-muted-foreground group-hover:text-foreground transition-colors">{profile.linkedin}</span>
                 </a>

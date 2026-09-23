@@ -455,7 +455,7 @@ export default function Achievements() {
                       <input 
                         type="checkbox" 
                         className="mt-1 accent-primary" 
-                        checked={formData.relatedSkillIds?.includes(skill.id)} 
+                        checked={(formData.relatedSkillIds || []).includes(skill.id)} 
                         onChange={(e) => {
                           const currentIds = formData.relatedSkillIds || [];
                           if (e.target.checked) setFormData({...formData, relatedSkillIds: [...currentIds, skill.id]});
@@ -483,7 +483,7 @@ export default function Achievements() {
                       <input 
                         type="checkbox" 
                         className="mt-1 accent-primary" 
-                        checked={formData.relatedProjectIds?.includes(project.id)} 
+                        checked={(formData.relatedProjectIds || []).includes(project.id)} 
                         onChange={(e) => {
                           const currentIds = formData.relatedProjectIds || [];
                           if (e.target.checked) setFormData({...formData, relatedProjectIds: [...currentIds, project.id]});

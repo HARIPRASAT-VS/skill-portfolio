@@ -187,10 +187,10 @@ export default function PublicPortfolio() {
             </div>
             
             <div className="flex items-center gap-4 pt-6">
-              <a href={profile.github.includes('http') ? profile.github : '#'} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 hover:text-primary transition-colors">
+              <a href={(profile.github || "").includes('http') ? profile.github : '#'} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 hover:text-primary transition-colors">
                 <GitBranch className="w-5 h-5" />
               </a>
-              <a href={profile.linkedin.includes('http') ? profile.linkedin : '#'} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 hover:text-primary transition-colors">
+              <a href={(profile.linkedin || "").includes('http') ? profile.linkedin : '#'} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 hover:text-primary transition-colors">
                 <UserCircle className="w-5 h-5" />
               </a>
               <a href={`mailto:${profile.email}`} className="p-2 bg-secondary rounded-full hover:bg-secondary/80 hover:text-primary transition-colors">
@@ -307,8 +307,8 @@ export default function PublicPortfolio() {
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {skills.map((skill, index) => {
-              const linkedProjects = projects.filter(p => p.relatedSkillIds.includes(skill.id));
-              const linkedCerts = certifications.filter(c => c.relatedSkillIds.includes(skill.id));
+              const linkedProjects = projects.filter(p => (p.relatedSkillIds || []).includes(skill.id));
+              const linkedCerts = certifications.filter(c => (c.relatedSkillIds || []).includes(skill.id));
               const hasEvidence = linkedProjects.length > 0 || linkedCerts.length > 0;
 
               return (
@@ -567,7 +567,7 @@ export default function PublicPortfolio() {
                 <Mail className="w-5 h-5 mr-2" /> Email Me
               </Button>
             </a>
-            <a href={profile.linkedin.includes('http') ? profile.linkedin : '#'} className="w-full sm:w-auto">
+            <a href={(profile.linkedin || "").includes('http') ? profile.linkedin : '#'} className="w-full sm:w-auto">
               <Button size="lg" variant="outline" className="w-full h-14 px-8 text-lg bg-transparent border-primary-foreground/30 hover:bg-white/10 text-white">
                 <UserCircle className="w-5 h-5 mr-2" /> Connect on LinkedIn
               </Button>
@@ -587,8 +587,8 @@ export default function PublicPortfolio() {
           </div>
           
           <div className="flex items-center gap-6">
-            <a href={profile.github.includes('http') ? profile.github : '#'} className="text-muted-foreground hover:text-foreground text-sm font-medium">GitHub</a>
-            <a href={profile.linkedin.includes('http') ? profile.linkedin : '#'} className="text-muted-foreground hover:text-foreground text-sm font-medium">LinkedIn</a>
+            <a href={(profile.github || "").includes('http') ? profile.github : '#'} className="text-muted-foreground hover:text-foreground text-sm font-medium">GitHub</a>
+            <a href={(profile.linkedin || "").includes('http') ? profile.linkedin : '#'} className="text-muted-foreground hover:text-foreground text-sm font-medium">LinkedIn</a>
             <a href={`mailto:${profile.email}`} className="text-muted-foreground hover:text-foreground text-sm font-medium">Email</a>
           </div>
           

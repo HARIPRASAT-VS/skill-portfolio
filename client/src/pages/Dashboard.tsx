@@ -263,8 +263,8 @@ export default function Dashboard() {
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               {skills.slice(0, 4).map(skill => {
-                const linkedProjects = projects.filter(p => p.relatedSkillIds && p.relatedSkillIds.includes(skill.id));
-                const linkedCerts = data.certifications.filter(c => c.relatedSkillIds && c.relatedSkillIds.includes(skill.id));
+                const linkedProjects = projects.filter(p => p.relatedSkillIds && (p.relatedSkillIds || []).includes(skill.id));
+                const linkedCerts = data.certifications.filter(c => c.relatedSkillIds && (c.relatedSkillIds || []).includes(skill.id));
                 const hasEvidence = linkedProjects.length > 0 || linkedCerts.length > 0;
 
                 return (

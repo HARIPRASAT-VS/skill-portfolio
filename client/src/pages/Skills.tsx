@@ -53,9 +53,9 @@ export default function Skills() {
   // Computed data
   const skillsWithEvidenceInfo = useMemo(() => {
     return skills.map(skill => {
-      const linkedProj = projects.filter(p => p.relatedSkillIds.includes(skill.id));
-      const linkedCert = certifications.filter(c => c.relatedSkillIds.includes(skill.id));
-      const linkedAchv = achievements.filter(a => a.relatedSkillIds.includes(skill.id));
+      const linkedProj = projects.filter(p => (p.relatedSkillIds || []).includes(skill.id));
+      const linkedCert = certifications.filter(c => (c.relatedSkillIds || []).includes(skill.id));
+      const linkedAchv = achievements.filter(a => (a.relatedSkillIds || []).includes(skill.id));
       return {
         ...skill,
         linkedProjects: linkedProj,
