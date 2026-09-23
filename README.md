@@ -268,7 +268,7 @@ CLIENT_URL=http://localhost:5173
 
 ### `client/.env`
 ```env
-VITE_API_URL=http://localhost:5000/api
+VITE_API_URL=https://skill-portfolio-rouge.vercel.app
 VITE_USE_MOCK_DATA=false
 ```
 
