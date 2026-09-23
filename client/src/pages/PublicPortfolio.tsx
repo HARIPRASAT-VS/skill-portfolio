@@ -174,7 +174,7 @@ export default function PublicPortfolio() {
               <div className="h-24 bg-gradient-to-r from-primary/80 to-accent/80 rounded-t-xl"></div>
               <CardContent className="px-8 pb-8 pt-0 relative">
                 <div className="w-24 h-24 bg-background rounded-full flex items-center justify-center text-3xl font-bold text-primary shadow-xl border-4 border-background -mt-12 mb-6">
-                  {profile.fullName.split(' ').map(n => n[0]).join('').substring(0,2)}
+                  {(profile.fullName || 'User').split(' ').map(n => n[0]).join('').substring(0,2)}
                 </div>
                 <h3 className="text-xl font-bold">{profile.fullName}</h3>
                 <p className="text-primary font-medium mb-4">{profile.degree}</p>

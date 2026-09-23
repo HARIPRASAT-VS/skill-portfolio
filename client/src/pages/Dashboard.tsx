@@ -46,7 +46,7 @@ export default function Dashboard() {
   });
 
   const handleCopyLink = () => {
-    navigator.clipboard.writeText(`https://skillfolio.demo/portfolio/${data.profile.fullName.split(' ')[0].toLowerCase()}`);
+    navigator.clipboard.writeText(`https://skillfolio.demo/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`);
     toast.success("Portfolio link copied!");
   };
 
@@ -63,11 +63,11 @@ export default function Dashboard() {
       <div className="flex flex-col lg:flex-row lg:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-primary to-accent mb-2">Dashboard</h1>
-          <h2 className="text-xl font-semibold mb-1">Good morning, {data.profile.fullName.split(' ')[0]} 👋</h2>
+          <h2 className="text-xl font-semibold mb-1">Good morning, {(data.profile.fullName || 'User').split(' ')[0]} 👋</h2>
           <p className="text-muted-foreground">Keep your skills, projects, certifications and achievements organized in one professional portfolio.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to={`/portfolio/${data.profile.fullName.split(' ')[0].toLowerCase()}`}>
+          <Link to={`/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`}>
             <Button variant="outline" className="shadow-sm">View Public Portfolio</Button>
           </Link>
           <DropdownMenu>
@@ -350,7 +350,7 @@ export default function Dashboard() {
                 <h3 className="font-bold text-lg mb-1">Your portfolio is ready to share 🚀</h3>
                 <p className="text-white/80 text-sm mb-5">Show recruiters and mentors what you've built.</p>
                 <div className="flex flex-col gap-2">
-                  <Link to={`/portfolio/${data.profile.fullName.split(' ')[0].toLowerCase()}`} className="w-full">
+                  <Link to={`/portfolio/${(data.profile.fullName || 'User').split(' ')[0].toLowerCase()}`} className="w-full">
                     <Button variant="secondary" className="w-full text-primary hover:bg-white/90">View Public Portfolio</Button>
                   </Link>
                   <Button variant="outline" className="w-full bg-transparent border-white/30 text-white hover:bg-white/10" onClick={handleCopyLink}>

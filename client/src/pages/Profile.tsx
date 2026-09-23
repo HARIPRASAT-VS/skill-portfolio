@@ -70,7 +70,7 @@ export default function Profile() {
               <div className="relative group">
                 <Avatar className="w-24 h-24 md:w-32 md:h-32 border-4 border-card bg-card text-3xl font-semibold shadow-md">
                   <AvatarFallback className="bg-primary/10 text-primary">
-                    {profile.fullName ? profile.fullName.split(' ').map(n => n[0]).join('').substring(0, 2) : 'HV'}
+                    {profile.fullName ? (profile.fullName || 'User').split(' ').map(n => n[0]).join('').substring(0, 2) : 'HV'}
                   </AvatarFallback>
                 </Avatar>
                 <div 
@@ -171,7 +171,7 @@ export default function Profile() {
                     </DialogContent>
                   </Dialog>
                   
-                  <Link to={`/portfolio/${profile.fullName.split(' ')[0].toLowerCase()}`} className="flex-1 md:flex-auto">
+                  <Link to={`/portfolio/${(profile.fullName || 'User').split(' ')[0].toLowerCase()}`} className="flex-1 md:flex-auto">
                     <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground shadow-sm">
                       View Public Portfolio <ExternalLink className="w-4 h-4 ml-2" />
                     </Button>
@@ -343,7 +343,7 @@ export default function Profile() {
                 <div className="flex items-center p-3 bg-secondary/30 rounded-lg mb-4 border border-border/50">
                   <FileText className="w-8 h-8 text-primary mr-3" />
                   <div>
-                    <p className="text-sm font-medium">{profile.fullName.replace(/\s+/g, '_')}_Resume.pdf</p>
+                    <p className="text-sm font-medium">{(profile.fullName || 'User').replace(/\s+/g, '_')}_Resume.pdf</p>
                     <p className="text-xs text-muted-foreground">PDF Document</p>
                   </div>
                 </div>

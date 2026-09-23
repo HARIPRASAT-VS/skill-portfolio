@@ -176,7 +176,7 @@ export default function Skills() {
           <p className="text-muted-foreground">Showcase the technologies and abilities you've developed.</p>
         </div>
         <div className="flex items-center gap-3">
-          <Link to={`/portfolio/${profile.fullName.split(' ')[0].toLowerCase()}`}>
+          <Link to={`/portfolio/${(profile.fullName || 'User').split(' ')[0].toLowerCase()}`}>
             <Button variant="outline" className="shadow-sm">View Public Portfolio <ArrowRight className="w-4 h-4 ml-2"/></Button>
           </Link>
           <Button onClick={handleOpenAddModal} className="shadow-sm">

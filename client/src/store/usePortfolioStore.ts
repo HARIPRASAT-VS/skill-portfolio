@@ -27,7 +27,11 @@ interface PortfolioState extends PortfolioData {
 }
 
 const emptyData: PortfolioData = {
-  profile: {} as Profile,
+  profile: {
+    id: '', fullName: '', title: '', email: '', phone: '', location: '', college: '', degree: '',
+    graduationYear: '', academicYear: '', bio: '', summary: '', careerGoal: '', github: '',
+    linkedin: '', portfolio: '', openToOpportunities: false, interests: []
+  } as Profile,
   skills: [],
   projects: [],
   certifications: [],
