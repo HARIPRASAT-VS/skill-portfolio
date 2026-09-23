@@ -44,7 +44,7 @@ const ComingSoon = ({ title, description, icon: Icon }: { title: string, descrip
 );
 
 // Placeholder Pages
-const LandingPage = () => <div className="p-8 text-center"><h1 className="text-4xl font-bold mb-4">SkillFolio</h1><p className="mb-4">Build a portfolio that speaks for you.</p><a href="/dashboard" className="text-primary hover:underline">Go to Dashboard</a></div>;
+import LandingPage from './pages/LandingPage';
 const Certifications = () => <ComingSoon title="Certifications" description="Manage, verify, and elegantly showcase your professional certifications." icon={Award} />;
 const Analytics = () => <ComingSoon title="Analytics" description="Deep dive into your portfolio's performance and recruiter engagement metrics." icon={BarChart3} />;
 const PortfolioPreview = () => <div className="p-6"><h1 className="text-2xl font-bold">Portfolio Preview</h1></div>;
