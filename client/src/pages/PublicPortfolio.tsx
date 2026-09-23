@@ -18,8 +18,15 @@ export default function PublicPortfolio() {
   useEffect(() => {
     if (!username) return;
     setLoading(true);
+    
+    // Add a timer to show a toast if the backend takes longer than 3 seconds (Render free tier cold start)
+    const wakeUpTimer = setTimeout(() => {
+      toast.info('Waking up the cloud server (this can take up to 50s on the free tier)...', { duration: 10000 });
+    }, 3000);
+
     apiClient.get('/portfolio/' + username)
       .then((res: any) => {
+        clearTimeout(wakeUpTimer);
         if (res.success && res.data) {
           setData(res.data);
         } else {
@@ -27,9 +34,11 @@ export default function PublicPortfolio() {
         }
       })
       .catch((err) => {
+        clearTimeout(wakeUpTimer);
         setError(err.response?.data?.message || 'Error fetching portfolio');
       })
       .finally(() => {
+        clearTimeout(wakeUpTimer);
         setLoading(false);
       });
   }, [username]);
