@@ -84,7 +84,7 @@ export default function Achievements() {
 
   // Analytics
   const publicCount = achievements.filter(a => a.isPublic).length;
-  const skillBackedCount = achievements.filter(a => a.relatedSkillIds.length > 0).length;
+  const skillBackedCount = achievements.filter(a => (a.relatedSkillIds || []).length > 0).length;
   const projectBackedCount = achievements.filter(a => (a.relatedProjectIds?.length ?? 0) > 0).length;
   
   // Recommendations
@@ -274,17 +274,17 @@ export default function Achievements() {
                     <div className="mt-auto mb-4">
                       <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest mb-1.5">Skills</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {achievement.relatedSkillIds.length === 0 ? (
+                        {(achievement.relatedSkillIds || []).length === 0 ? (
                            <span className="text-xs italic text-muted-foreground">No skills linked</span>
                         ) : (
                           <>
-                            {achievement.relatedSkillIds.slice(0,3).map(skillId => {
+                            {(achievement.relatedSkillIds || []).slice(0,3).map(skillId => {
                               const skill = skills.find(s => s.id === skillId);
                               if (!skill) return null;
                               return <Badge key={skill.id} variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">{skill.name}</Badge>;
                             })}
-                            {achievement.relatedSkillIds.length > 3 && (
-                              <Badge variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">+{achievement.relatedSkillIds.length - 3}</Badge>
+                            {(achievement.relatedSkillIds || []).length > 3 && (
+                              <Badge variant="secondary" className="text-xs px-2 py-0 h-5 font-medium">+{(achievement.relatedSkillIds || []).length - 3}</Badge>
                             )}
                           </>
                         )}
@@ -558,10 +558,10 @@ export default function Achievements() {
                 <div>
                   <div className="text-xs font-bold uppercase text-muted-foreground mb-3">Skills Demonstrated</div>
                   <div className="flex flex-wrap gap-2">
-                    {activeAchievement.relatedSkillIds.length === 0 ? (
+                    {(activeAchievement.relatedSkillIds || []).length === 0 ? (
                       <p className="text-sm text-muted-foreground italic">No skills linked to this achievement.</p>
                     ) : (
-                      activeAchievement.relatedSkillIds.map(skillId => {
+                      (activeAchievement.relatedSkillIds || []).map(skillId => {
                         const s = skills.find(s => s.id === skillId);
                         if(!s) return null;
                         return (
