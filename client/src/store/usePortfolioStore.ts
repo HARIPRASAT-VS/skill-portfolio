@@ -1,53 +1,27 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 import type { PortfolioData, Skill, Project, Certification, Achievement, Profile } from '../types';
-import { initialMockData } from '../data/mockData';
+import apiClient from '../services/apiClient';
 
 interface PortfolioState extends PortfolioData {
-  loadDemoData: () => void;
-  resetDemo: () => void;
-  updateProfile: (profile: Partial<Profile>) => void;
-  addSkill: (skill: Skill) => void;
-  updateSkill: (id: string, skill: Partial<Skill>) => void;
-  deleteSkill: (id: string) => void;
-  toggleSkillVisibility: (id: string) => void;
-  addEvidence: (skillId: string, itemIds: { projects?: string[], certifications?: string[], achievements?: string[] }) => void;
-  removeEvidence: (skillId: string, itemIds: { projects?: string[], certifications?: string[], achievements?: string[] }) => void;
-  addProject: (project: Project) => void;
-  updateProject: (id: string, project: Partial<Project>) => void;
-  deleteProject: (id: string) => void;
-  toggleProjectVisibility: (id: string) => void;
-  toggleFeaturedProject: (id: string) => void;
-  addCertification: (cert: Certification) => void;
-  updateCertification: (id: string, cert: Partial<Certification>) => void;
-  deleteCertification: (id: string) => void;
-  addAchievement: (achievement: Achievement) => void;
-  updateAchievement: (id: string, achievement: Partial<Achievement>) => void;
-  deleteAchievement: (id: string) => void;
-  toggleAchievementVisibility: (id: string) => void;
+  fetchData: () => Promise<void>;
+  updateProfile: (profile: Partial<Profile>) => Promise<void>;
+  addSkill: (skill: Omit<Skill, 'id'>) => Promise<void>;
+  updateSkill: (id: string, skill: Partial<Skill>) => Promise<void>;
+  deleteSkill: (id: string) => Promise<void>;
+  addProject: (project: Omit<Project, 'id'>) => Promise<void>;
+  updateProject: (id: string, project: Partial<Project>) => Promise<void>;
+  deleteProject: (id: string) => Promise<void>;
+  addCertification: (cert: Omit<Certification, 'id'>) => Promise<void>;
+  updateCertification: (id: string, cert: Partial<Certification>) => Promise<void>;
+  deleteCertification: (id: string) => Promise<void>;
+  addAchievement: (achievement: Omit<Achievement, 'id'>) => Promise<void>;
+  updateAchievement: (id: string, achievement: Partial<Achievement>) => Promise<void>;
+  deleteAchievement: (id: string) => Promise<void>;
 }
 
 const emptyData: PortfolioData = {
-  profile: {
-    id: 'user-empty',
-    fullName: '',
-    title: '',
-    email: '',
-    phone: '',
-    location: '',
-    college: '',
-    degree: '',
-    graduationYear: '',
-    academicYear: '',
-    bio: '',
-    summary: '',
-    careerGoal: '',
-    github: '',
-    linkedin: '',
-    portfolio: '',
-    openToOpportunities: false,
-    interests: []
-  },
+  profile: {} as Profile,
   skills: [],
   projects: [],
   certifications: [],
@@ -56,75 +30,78 @@ const emptyData: PortfolioData = {
 
 export const usePortfolioStore = create<PortfolioState>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       ...emptyData,
-      loadDemoData: () => set(initialMockData),
-      resetDemo: () => set(emptyData),
-      updateProfile: (profileUpdates) => set((state) => ({
-        profile: { ...state.profile, ...profileUpdates }
-      })),
-      addSkill: (skill) => set((state) => ({ skills: [...state.skills, skill] })),
-      updateSkill: (id, updates) => set((state) => ({
-        skills: state.skills.map(s => s.id === id ? { ...s, ...updates, updatedAt: new Date().toISOString() } : s)
-      })),
-      deleteSkill: (id) => set((state) => ({
-        skills: state.skills.filter(s => s.id !== id),
-        projects: state.projects.map(p => ({ ...p, relatedSkillIds: p.relatedSkillIds.filter(sid => sid !== id) })),
-        certifications: state.certifications.map(c => ({ ...c, relatedSkillIds: c.relatedSkillIds.filter(sid => sid !== id) })),
-        achievements: state.achievements.map(a => ({ ...a, relatedSkillIds: a.relatedSkillIds.filter(sid => sid !== id) }))
-      })),
-      toggleSkillVisibility: (id) => set((state) => ({
-        skills: state.skills.map(s => s.id === id ? { ...s, isPublic: !s.isPublic, updatedAt: new Date().toISOString() } : s)
-      })),
-      addEvidence: (skillId, itemIds) => set((state) => ({
-        projects: state.projects.map(p => itemIds.projects?.includes(p.id) && !p.relatedSkillIds.includes(skillId) 
-          ? { ...p, relatedSkillIds: [...p.relatedSkillIds, skillId] } : p),
-        certifications: state.certifications.map(c => itemIds.certifications?.includes(c.id) && !c.relatedSkillIds.includes(skillId) 
-          ? { ...c, relatedSkillIds: [...c.relatedSkillIds, skillId] } : c),
-        achievements: state.achievements.map(a => itemIds.achievements?.includes(a.id) && !a.relatedSkillIds.includes(skillId) 
-          ? { ...a, relatedSkillIds: [...a.relatedSkillIds, skillId] } : a),
-      })),
-      removeEvidence: (skillId, itemIds) => set((state) => ({
-        projects: state.projects.map(p => itemIds.projects?.includes(p.id) 
-          ? { ...p, relatedSkillIds: p.relatedSkillIds.filter(id => id !== skillId) } : p),
-        certifications: state.certifications.map(c => itemIds.certifications?.includes(c.id) 
-          ? { ...c, relatedSkillIds: c.relatedSkillIds.filter(id => id !== skillId) } : c),
-        achievements: state.achievements.map(a => itemIds.achievements?.includes(a.id) 
-          ? { ...a, relatedSkillIds: a.relatedSkillIds.filter(id => id !== skillId) } : a),
-      })),
-      addProject: (project) => set((state) => ({ projects: [...state.projects, project] })),
-      updateProject: (id, updates) => set((state) => ({
-        projects: state.projects.map(p => p.id === id ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p)
-      })),
-      deleteProject: (id) => set((state) => ({ 
-        projects: state.projects.filter(p => p.id !== id),
-        achievements: state.achievements.map(a => ({
-          ...a,
-          relatedProjectIds: a.relatedProjectIds?.filter(pid => pid !== id) || []
-        }))
-      })),
-      toggleProjectVisibility: (id) => set((state) => ({
-        projects: state.projects.map(p => p.id === id ? { ...p, isPublic: !p.isPublic, updatedAt: new Date().toISOString() } : p)
-      })),
-      toggleFeaturedProject: (id) => set((state) => ({
-        projects: state.projects.map(p => p.id === id ? { ...p, featured: !p.featured, updatedAt: new Date().toISOString() } : p)
-      })),
-      addCertification: (cert) => set((state) => ({ certifications: [...state.certifications, cert] })),
-      updateCertification: (id, updates) => set((state) => ({
-        certifications: state.certifications.map(c => c.id === id ? { ...c, ...updates, updatedAt: new Date().toISOString() } : c)
-      })),
-      deleteCertification: (id) => set((state) => ({ certifications: state.certifications.filter(c => c.id !== id) })),
-      addAchievement: (achievement) => set((state) => ({ achievements: [...state.achievements, achievement] })),
-      updateAchievement: (id, updates) => set((state) => ({
-        achievements: state.achievements.map(a => a.id === id ? { ...a, ...updates, updatedAt: new Date().toISOString() } : a)
-      })),
-      deleteAchievement: (id) => set((state) => ({ achievements: state.achievements.filter(a => a.id !== id) })),
-      toggleAchievementVisibility: (id) => set((state) => ({
-        achievements: state.achievements.map(a => a.id === id ? { ...a, isPublic: !a.isPublic, updatedAt: new Date().toISOString() } : a)
-      }))
+      fetchData: async () => {
+        try {
+          const [profile, skills, projects, certifications, achievements] = await Promise.all([
+            apiClient.get('/profile').then((r: any) => r.data).catch(() => ({})),
+            apiClient.get('/skills').then((r: any) => r.data).catch(() => []),
+            apiClient.get('/projects').then((r: any) => r.data).catch(() => []),
+            apiClient.get('/certifications').then((r: any) => r.data).catch(() => []),
+            apiClient.get('/achievements').then((r: any) => r.data).catch(() => [])
+          ]);
+          set({ profile, skills, projects, certifications, achievements });
+        } catch (error) {
+          console.error("Failed to fetch portfolio data", error);
+        }
+      },
+      updateProfile: async (updates) => {
+        const res = await apiClient.put('/profile', updates) as any;
+        set({ profile: res.data });
+      },
+      addSkill: async (skill) => {
+        const res = await apiClient.post('/skills', skill) as any;
+        set((state) => ({ skills: [res.data, ...state.skills] }));
+      },
+      updateSkill: async (id, updates) => {
+        const res = await apiClient.put(`/skills/${id}`, updates) as any;
+        set((state) => ({ skills: state.skills.map(s => s._id === id || s.id === id ? res.data : s) }));
+      },
+      deleteSkill: async (id) => {
+        await apiClient.delete(`/skills/${id}`);
+        set((state) => ({ skills: state.skills.filter(s => s._id !== id && s.id !== id) }));
+      },
+      addProject: async (project) => {
+        const res = await apiClient.post('/projects', project) as any;
+        set((state) => ({ projects: [res.data, ...state.projects] }));
+      },
+      updateProject: async (id, updates) => {
+        const res = await apiClient.put(`/projects/${id}`, updates) as any;
+        set((state) => ({ projects: state.projects.map(p => p._id === id || p.id === id ? res.data : p) }));
+      },
+      deleteProject: async (id) => {
+        await apiClient.delete(`/projects/${id}`);
+        set((state) => ({ projects: state.projects.filter(p => p._id !== id && p.id !== id) }));
+      },
+      addCertification: async (cert) => {
+        const res = await apiClient.post('/certifications', cert) as any;
+        set((state) => ({ certifications: [res.data, ...state.certifications] }));
+      },
+      updateCertification: async (id, updates) => {
+        const res = await apiClient.put(`/certifications/${id}`, updates) as any;
+        set((state) => ({ certifications: state.certifications.map(c => c._id === id || c.id === id ? res.data : c) }));
+      },
+      deleteCertification: async (id) => {
+        await apiClient.delete(`/certifications/${id}`);
+        set((state) => ({ certifications: state.certifications.filter(c => c._id !== id && c.id !== id) }));
+      },
+      addAchievement: async (achievement) => {
+        const res = await apiClient.post('/achievements', achievement) as any;
+        set((state) => ({ achievements: [res.data, ...state.achievements] }));
+      },
+      updateAchievement: async (id, updates) => {
+        const res = await apiClient.put(`/achievements/${id}`, updates) as any;
+        set((state) => ({ achievements: state.achievements.map(a => a._id === id || a.id === id ? res.data : a) }));
+      },
+      deleteAchievement: async (id) => {
+        await apiClient.delete(`/achievements/${id}`);
+        set((state) => ({ achievements: state.achievements.filter(a => a._id !== id && a.id !== id) }));
+      }
     }),
     {
       name: 'skillfolio-storage',
+      partialize: (state) => ({ profile: state.profile }) // Only persist profile locally if needed
     }
   )
 );
