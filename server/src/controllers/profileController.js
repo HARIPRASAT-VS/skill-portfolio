@@ -6,7 +6,7 @@ const { logActivity } = require('../services/activityService');
 // @access  Private
 const getProfile = async (req, res) => {
   try {
-    const profile = await Profile.findOne({ user: req.user.id });
+    const profile = await Profile.findOne({ user: req.user.id }).populate('user', 'username email');
 
     if (!profile) {
       return res.status(404).json({ success: false, message: 'Profile not found' });
@@ -34,7 +34,7 @@ const updateProfile = async (req, res) => {
         { user: req.user.id },
         { $set: req.body },
         { new: true, runValidators: true }
-      );
+      ).populate('user', 'username email');
     }
 
     await logActivity(req.user.id, 'Updated profile', profile.fullName || 'Profile Details', 'primary');
