@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from 'react';
 import { X, Send, Bot, User, Sparkles } from 'lucide-react';
 import { Button } from './ui/button';
 import { usePortfolioStore } from '../store/usePortfolioStore';
+import apiClient from '../services/apiClient';
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -13,6 +14,8 @@ export function AIAssistant() {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
   const profile = usePortfolioStore((state) => state.profile);
+  const skills = usePortfolioStore((state) => state.skills);
+  const projects = usePortfolioStore((state) => state.projects);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -35,17 +38,15 @@ export function AIAssistant() {
       const contextData = {
         name: profile?.fullName,
         title: profile?.title,
-        skills: profile?.interests
+        interests: profile?.interests,
+        skills: skills?.map(s => s.name),
+        projects: projects?.map(p => p.title)
       };
 
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: userMessage, context: contextData })
+      const data: any = await apiClient.post('/ai/chat', { 
+        message: userMessage, 
+        context: contextData 
       });
-
-      if (!response.ok) throw new Error('Network response was not ok');
-      const data = await response.json();
       
       setMessages(prev => [...prev, { role: 'assistant', text: data.reply }]);
     } catch (error) {
