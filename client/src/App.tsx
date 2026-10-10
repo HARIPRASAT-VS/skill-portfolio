@@ -52,6 +52,9 @@ const PortfolioPreview = () => <div className="p-6"><h1 className="text-2xl font
 import { useEffect } from 'react';
 import { usePortfolioStore } from './store/usePortfolioStore';
 
+import { ThemeProvider } from './components/ThemeProvider';
+import { AIAssistant } from './components/AIAssistant';
+
 function App() {
   const fetchData = usePortfolioStore((state) => state.fetchData);
 
@@ -60,27 +63,30 @@ function App() {
   }, [fetchData]);
 
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        
-        <Route path="/dashboard" element={<DashboardLayout />}>
-          <Route index element={<Dashboard />} />
-          <Route path="profile" element={<Profile />} />
-          <Route path="skills" element={<Skills />} />
-          <Route path="projects" element={<Projects />} />
-          <Route path="certifications" element={<Certifications />} />
-          <Route path="achievements" element={<Achievements />} />
-          <Route path="analytics" element={<Analytics />} />
-        </Route>
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          
+          <Route path="/dashboard" element={<DashboardLayout />}>
+            <Route index element={<Dashboard />} />
+            <Route path="profile" element={<Profile />} />
+            <Route path="skills" element={<Skills />} />
+            <Route path="projects" element={<Projects />} />
+            <Route path="certifications" element={<Certifications />} />
+            <Route path="achievements" element={<Achievements />} />
+            <Route path="analytics" element={<Analytics />} />
+          </Route>
 
-        <Route path="/portfolio/:username" element={<PublicPortfolio />} />
-        <Route path="/portfolio/preview" element={<PortfolioPreview />} />
-        
-        {/* Fallback */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
-    </BrowserRouter>
+          <Route path="/portfolio/:username" element={<PublicPortfolio />} />
+          <Route path="/portfolio/preview" element={<PortfolioPreview />} />
+          
+          {/* Fallback */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+        <AIAssistant />
+      </BrowserRouter>
+    </ThemeProvider>
   );
 }
 

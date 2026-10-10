@@ -1,4 +1,5 @@
 import { Outlet, Link, useLocation } from 'react-router-dom';
+import { ThemeToggle } from '../components/ThemeToggle';
 import { 
   LayoutDashboard, User, Code2, FolderKanban, 
   Award, Star, BarChart3, Settings, HelpCircle,
@@ -87,6 +88,7 @@ export function DashboardLayout() {
           </div>
 
           <div className="flex items-center gap-4 ml-auto">
+            <ThemeToggle />
             <Button variant="ghost" size="icon" className="relative">
               <Bell className="w-5 h-5 text-muted-foreground" />
               <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-destructive border-2 border-card"></span>
@@ -95,7 +97,7 @@ export function DashboardLayout() {
             <div className="flex items-center gap-3">
               <div className="hidden md:block text-right">
                 <div className="text-sm font-medium leading-none mb-1">{profile.fullName || 'User'}</div>
-                <div className="text-xs text-muted-foreground leading-none">Student</div>
+                <div className="text-xs text-muted-foreground leading-none">{profile.role || 'Student'}</div>
               </div>
               <Avatar>
                 <AvatarFallback className="bg-primary/10 text-primary">
@@ -105,6 +107,7 @@ export function DashboardLayout() {
             </div>
           </div>
         </header>
+
 
         {/* Page Content */}
         <div className="flex-1 overflow-y-auto p-6">

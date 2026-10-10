@@ -11,6 +11,8 @@ export type SkillCategory =
   | 'Tools'
   | 'Soft Skills';
 
+export type Role = 'Student' | 'Teacher' | 'Recruiter' | 'Admin';
+
 export interface Profile {
   id: string;
   fullName: string;
@@ -30,6 +32,7 @@ export interface Profile {
   portfolio: string;
   openToOpportunities: boolean;
   interests: string[];
+  role?: Role;
   isPublic?: boolean;
 }
 
